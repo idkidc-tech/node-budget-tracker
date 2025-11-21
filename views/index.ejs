@@ -3,42 +3,154 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Budget Tracker</title>
+    <title>Budget Tracker | Dashboard</title>
     <link rel="stylesheet" href="/style.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header><h1>My Budget Tracker</h1></header>
-        <div class="summary">
-            <div class="income"><span>$<%= totalIncome %></span><p>Total Income</p></div>
-            <div class="expense"><span>$<%= totalExpenses %></span><p>Total Expenses</p></div>
-            <div class="balance"><span>$<%= balance %></span><p>Current Balance</p></div>
-        </div>
-        <div class="actions">
-            <h2>Add New Transaction</h2>
-            <form action="/add" method="POST" class="form-inline">
-                <input type="text" name="description" placeholder="Description" required>
-                <input type="number" name="amount" placeholder="Amount" step="0.01" required>
-                <select name="type" required><option value="expense">Expense</option><option value="income">Income</option></select>
-                <button type="submit">Add</button>
-            </form>
-        </div>
-        <h2>Transaction History</h2>
-        <table>
-            <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Type</th><th>Action</th></tr></thead>
-            <tbody>
-                <% transactions.forEach(transaction => { %>
-                <tr>
-                    <td><%= new Date(transaction.date).toLocaleDateString() %></td>
-                    <td><%= transaction.description %></td>
-                    <td class="<%= transaction.type %>"><% if (transaction.type === 'expense') { %>-<% } %>$<%= transaction.amount.toFixed(2) %></td>
-                    <td><%= transaction.type.charAt(0).toUpperCase() + transaction.type.slice(1) %></td>
-                    <td><form action="/delete/<%= transaction.id %>" method="POST"><button type="submit" class="delete-btn">Delete</button></form></td>
-                </tr>
-                <% }) %>
-                <% if (transactions.length === 0) { %><tr><td colspan="5">No transactions yet. Add one above!</td></tr><% } %>
-            </tbody>
-        </table>
+    <div class="dashboard-container">
+        <header>
+            <h1>💰 Budget Tracker</h1>
+            <p>Track your income and expenses effortlessly.</p>
+        </header>
+
+        <main>
+            <section class="summary-cards">
+                <div class="card income-card">
+                    <h3>Total Income</h3>
+                    <p class="amount">$<%= totalIncome %></p>
+                </div>
+                <div class="card expense-card">
+                    <h3>Total Expenses</h3>
+                    <p class="amount">$<%= totalExpenses %></p>
+                </div>
+                <div class="card balance-card">
+                    <h3>Current Balance</h3>
+                    <p class="amount">$<%= balance %></p>
+                </div>
+            </section>
+
+            <div class="content-grid">
+                <section class="card add-transaction-card">
+                    <h2>Add New Transaction</h2>
+                    <form action="/add" method="POST">
+                        <div class="form-group">
+                            <input type="text" name="description" placeholder="Description" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="number" name="amount" placeholder="Amount" step="0.01" required>
+                        </div>
+                        <div class="form-row">
+                            <select name="type" id="type" required>
+                                <option value="expense" selected>Expense</option>
+                                <option value="income">Income</option>
+                            </select>
+                            <select name="category_id" required>
+                                <% categories.forEach(cat => { %>
+                                    <option value="<%= cat.id %>"><%= cat.name %></option>
+                                <% }) %>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary">➕ Add Transaction</button>
+                    </form>
+                </section>
+
+                <section class="card chart-card">
+                    <h2>Spending by Category</h2>
+                    <div class="chart-container">
+                        <canvas id="expenseChart"></canvas>
+                    </div>
+                </section>
+            </div>
+
+            <section class="card history-card">
+                <h2>Transaction History</h2>
+                <div class="table-wrapper">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Amount</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <% transactions.forEach(transaction => { %>
+                            <tr>
+                                <td><%= new Date(transaction.date).toLocaleDateString() %></td>
+                                <td><%= transaction.description %></td>
+                                <td><%= transaction.category_name || 'N/A' %></td>
+                                <td class="amount-<%= transaction.type %>">
+                                    <% if (transaction.type === 'expense') { %>-<% } %>
+                                    $<%= transaction.amount.toFixed(2) %>
+                                </td>
+                                <td>
+                                    <form action="/delete/<%= transaction.id %>" method="POST">
+                                        <button type="submit" class="btn btn-delete">🗑️</button>
+                                    </form>
+                                </td>
+                            </tr>
+                            <% }) %>
+                            <% if (transactions.length === 0) { %>
+                            <tr>
+                                <td colspan="5" style="text-align: center;">No transactions yet. Add one above!</td>
+                            </tr>
+                            <% } %>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
     </div>
+
+    <script>
+        // Fetch data and render the chart
+        fetch('/api/chart-data')
+            .then(response => response.json())
+            .then(data => {
+                const ctx = document.getElementById('expenseChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'pie',
+                    data: {
+                        labels: data.labels,
+                        datasets: [{
+                            label: 'Expenses by Category',
+                            data: data.data,
+                            backgroundColor: [
+                                '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
+                                '#FF9F40', '#FF6384', '#C9CBCF', '#4BC0C0', '#FF6384'
+                            ],
+                            hoverOffset: 4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: {
+                                position: 'bottom',
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: function(context) {
+                                        let label = context.label || '';
+                                        if (label) {
+                                            label += ': ';
+                                        }
+                                        if (context.parsed !== null) {
+                                            label += new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(context.parsed);
+                                        }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            });
+    </script>
 </body>
 </html>
