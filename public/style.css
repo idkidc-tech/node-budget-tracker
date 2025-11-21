@@ -1,0 +1,21 @@
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: #f4f7f6; color: #333; margin: 0; padding: 20px; }
+.container { max-width: 900px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+h1, h2 { color: #0056b3; text-align: center; }
+header { text-align: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+.summary { display: flex; justify-content: space-around; margin-bottom: 30px; text-align: center; }
+.summary div { padding: 15px; border-radius: 5px; flex-grow: 1; margin: 0 10px; }
+.summary span { display: block; font-size: 1.8em; font-weight: bold; }
+.income { background-color: #d4edda; color: #155724; }
+.expense { background-color: #f8d7da; color: #721c24; }
+.balance { background-color: #d1ecf1; color: #0c5460; }
+.actions { margin-bottom: 30px; }
+.form-inline { display: flex; gap: 10px; flex-wrap: wrap; }
+.form-inline input, .form-inline select, .form-inline button { padding: 10px; border: 1px solid #ccc; border-radius: 4px; }
+.form-inline input[type="text"] { flex-grow: 1; }
+.form-inline button { background-color: #007bff; color: white; border: none; cursor: pointer; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: left; }
+th { background-color: #f2f2f2; }
+.income { color: #28a745; font-weight: bold; }
+.expense { color: #dc3545; font-weight: bold; }
+.delete-btn { background-color: #dc3545; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; }
